@@ -7,6 +7,7 @@ export const apps = [{
   env: {
     NODE_ENV: "production",
     PORT: 3000,
+    JWT_SECRET: "UnAHeXAdEcImAL_o_FrAsE_UlTrA_SeCrEtA_Y_LaRgA_2026",
     MONGODB_URI: "mongodb+srv://byrondanipm:6Y8uCCOnN26cXWef@cluster0.ytajjgp.mongodb.net/usuarios_db?retryWrites=true&w=majority"
   },
   // Logs y Monitoreo del Servidor
@@ -24,7 +25,7 @@ export const deploy = {
     repo: 'git@github.com:ByronDaniel/rule-manager-backend.git',
     path: '/var/www/tu-app',
     'post-deploy': 'mkdir -p logs && npm install && npm run build && pm2 reload ecosystem.config.js --env production && pm2 save',
-    ssh_options: "IdentityFile=/Users/byrondelgado/Downloads/rule manager key.pem" // Ruta a tu llave .pem local
+    ssh_options: "IdentityFile=/Users/byrondelgado/Downloads/rule-manager-key.pem" // Ruta a tu llave .pem local
   }
 };
 
