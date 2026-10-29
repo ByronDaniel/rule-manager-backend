@@ -23,9 +23,7 @@ export const deploy = {
     host: '100.48.25.37',
     ref: 'origin/main',
     repo: 'git@github.com:ByronDaniel/rule-manager-backend.git',
-    path: '/var/www/tu-app',
-    'post-deploy': 'mkdir -p logs && npm install && npm run build && pm2 reload ecosystem.config.js --env production && pm2 save',
-    ssh_options: "IdentityFile=/Users/byrondelgado/Downloads/rule-manager-key.pem" // Ruta a tu llave .pem local
+    path: '/var/www/tu-app', "post-deploy": "mkdir -p logs && npm install && pm2 startOrReload ecosystem.config.js --env production && pm2 save"    ssh_options: "IdentityFile=/Users/byrondelgado/Downloads/rule-manager-key.pem" // Ruta a tu llave .pem local
   }
 };
 
