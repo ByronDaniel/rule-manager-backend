@@ -1,0 +1,1730 @@
+openapi: 3.1.0
+info:
+  title: Rule Manager API (RMA)
+  version: 1.0.0
+  summary: Gestor de parámetros y reglas de negocio para el sector bancario.
+  description: |
+    Contrato de la API privada **Rule Manager API (RMA)**. Centraliza el catálogo de parámetros de negocio
+    (límites, tasas, días de pago, etc.), gobierna sus cambios mediante el flujo **Maker-Checker** y
+    entrega a las aplicaciones consumidoras internas el valor vigente.
+
+    ## Principios del contrato
+    * **CQRS contractual.** La administración (`/parameters`, `/change-requests`, `/audit-events`) está separada
+      de la lectura optimizada de valores vigentes (`/parameter-values`).
+    * **Definición ≠ propuesta ≠ versión publicada.** `Parameter` es la definición estable; `ChangeRequest` es la
+      propuesta (no afecta a los consumidores); `ParameterVersion` es la versión inmutable publicada al aprobar.
+    * **Ningún CRUD omite la aprobación.** Ni `PUT /parameters/{id}` ni `DELETE /parameters/{id}` pueden cambiar
+      el valor vigente de un parámetro publicado. El valor solo cambia al aprobar una `ChangeRequest`.
+    * **Sin detalles de implementación.** Redis, Kafka, outbox y cachés no forman parte del contrato.
+
+    ## Versionado
+    La API se versiona en la ruta (`/api/v1`). El versionado de los parámetros de negocio es independiente:
+    se expresa con `versionNumber` (entero creciente por parámetro).
+
+    ## Concurrencia e idempotencia
+    * Las respuestas de recursos modificables incluyen `ETag`. Las operaciones `PUT`, `DELETE` y las decisiones
+      de aprobación exigen `If-Match` (`428` si falta, `412` si está obsoleto).
+    * Los `POST` que crean recursos o transicionan estado aceptan `Idempotency-Key` (UUID). Un reintento con la
+      misma clave y el mismo cuerpo devuelve la respuesta original sin duplicar efectos; la misma clave con
+      cuerpo distinto devuelve `422` (`IDEMPOTENCY_KEY_REUSED`). `PUT` y `DELETE` son idempotentes por semántica HTTP
+      combinada con `If-Match`; `POST` no lo es sin `Idempotency-Key`.
+
+    ## Seguridad
+    El servicio autentica usuarios y emite tokens JWT Bearer. Los roles `MAKER`, `CHECKER`, `ADMIN`,
+    `AUDITOR` y `CONSUMER` se validan en cada operación protegida.
+
+    ## Vigencias
+    Los intervalos son inclusivos al inicio y exclusivos al final. No se admiten programaciones futuras
+    incompatibles para un mismo parámetro. Una nueva versión sustituye a la anterior desde su inicio;
+    al vencer sin sucesora no se recupera una versión anterior. `REACTIVATE` recupera el último valor
+    publicado por una solicitud `SET_VALUE` y falla si no existe.
+
+    ## Objetivos de calidad (no garantizados por el contrato)
+    Latencia de consulta < 50 ms, propagación < 1 s y trazabilidad completa son requisitos de calidad
+    que deben verificarse con pruebas de carga y de integración.
+  contact:
+    name: Equipo RMA - Maestría en Software UPS
+  license:
+    name: Uso interno
+    identifier: LicenseRef-Internal
+servers:
+  - url: https://api-dev.banco.example/rma
+    description: Ejemplo - desarrollo (URL por configurar)
+  - url: https://api.banco.example/rma
+    description: Ejemplo - producción vía API Gateway (URL por configurar)
+tags:
+  - name: Authentication
+    description: Generación y validación de tokens de acceso Bearer (JWT).
+  - name: Parameters
+    description: Administración del catálogo de definiciones de parámetros (escritura/administración).
+  - name: Change Requests
+    description: Propuestas de cambio de valor o de estado (Maker).
+  - name: Parameter Values
+    description: Lectura optimizada de valores vigentes para aplicaciones consumidoras.
+  - name: Audit
+    description: Consulta de eventos de auditoría (solo lectura, inmutable).
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/auth/token:
+    post:
+      tags: [Authentication]
+      operationId: authenticate
+      summary: Autenticar y obtener token de acceso Bearer (JWT)
+      description: |
+        Valida las credenciales (usuario y contraseña) y emite un token de acceso Bearer (JWT)
+        con sus roles correspondientes para consumir los endpoints protegidos mediante el encabezado
+        `Authorization: Bearer <token>`.
+        **No requiere autenticación previa.**
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/CorrelationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AuthRequest" }
+      responses:
+        "200":
+          description: Token de acceso emitido exitosamente.
+          headers:
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+  /api/v1/parameters:
+    get:
+      tags: [Parameters]
+      operationId: listParameters
+      summary: Listar definiciones de parámetros
+      description: |
+        Colección administrativa paginada. Cada elemento incluye `currentValue`, el valor de su versión
+        vigente, cuando existe.
+        **Roles:** MAKER, CHECKER, ADMIN, AUDITOR.
+      x-required-roles: [MAKER, CHECKER, ADMIN, AUDITOR]
+      security:
+        - bearerAuth: []
+      parameters:
+        - {
+            name: code,
+            in: query,
+            description: Coincidencia exacta del código.,
+            schema: { $ref: "#/components/schemas/ParameterCode" },
+          }
+        - {
+            name: category,
+            in: query,
+            schema: { $ref: "#/components/schemas/Category" },
+          }
+        - {
+            name: businessDomain,
+            in: query,
+            schema: { $ref: "#/components/schemas/BusinessDomain" },
+          }
+        - {
+            name: status,
+            in: query,
+            schema: { $ref: "#/components/schemas/ParameterStatus" },
+          }
+        - name: sort
+          in: query
+          description: "Formato `campo,dirección`. Campos permitidos: code, name, createdAt, updatedAt."
+          schema:
+            {
+              type: string,
+              pattern: "^(code|name|createdAt|updatedAt),(asc|desc)$",
+              default: "code,asc",
+            }
+        - $ref: "#/components/parameters/Authorization"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Size"
+        - $ref: "#/components/parameters/CorrelationId"
+      responses:
+        "200":
+          description: Página de parámetros.
+          headers:
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ParameterPage" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+    post:
+      tags: [Parameters]
+      operationId: createParameter
+      summary: Crear la definición de un parámetro
+      description: |
+        Registra la **definición** (identidad, tipo y restricciones) en estado `DRAFT`, sin valor vigente.
+        El primer valor se propone con `POST /change-requests` (`changeType=SET_VALUE`) y se publica al aprobarse.
+        **Roles:** MAKER, ADMIN.
+      x-required-roles: [MAKER, ADMIN]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CorrelationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ParameterCreate" }
+            examples:
+              dailyTransferLimit:
+                summary: Límite diario de transferencias
+                value:
+                  code: TRANSFER_DAILY_LIMIT
+                  name: Límite diario de transferencias
+                  description: Monto máximo acumulado por cliente y día en transferencias interbancarias.
+                  dataType: MONEY
+                  category: LIMITS
+                  businessDomain: PAYMENTS
+                  scope: { channel: MOBILE, segment: RETAIL }
+                  unit: USD
+                  constraints:
+                    min: 0.00
+                    max: 50000.00
+      responses:
+        "201":
+          description: Definición creada.
+          headers:
+            Location:
+              {
+                description: URI del recurso creado.,
+                schema: { type: string, format: uri-reference },
+              }
+            ETag: { $ref: "#/components/headers/ETag" }
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Parameter" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/UnprocessableContent" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+  /api/v1/parameters/{parameterId}:
+    parameters:
+      - $ref: "#/components/parameters/ParameterId"
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/CorrelationId"
+    get:
+      tags: [Parameters]
+      operationId: getParameter
+      summary: Consultar una definición de parámetro
+      description: "**Roles:** MAKER, CHECKER, ADMIN, AUDITOR."
+      x-required-roles: [MAKER, CHECKER, ADMIN, AUDITOR]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Definición del parámetro.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Parameter" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+    put:
+      tags: [Parameters]
+      operationId: replaceParameterMetadata
+      summary: Reemplazar los metadatos editables de la definición
+      description: |
+        Reemplazo completo de los metadatos editables (`name`, `description`, `category`, `businessDomain`,
+        `unit`, `constraints`). **No modifica el valor vigente** y no puede cambiar `code`, `dataType` ni `scope`
+        (inmutables). Cambiar `constraints` o `unit` solo se permite mientras el parámetro está en `DRAFT` o si
+        las restricciones nuevas siguen validando todas las versiones publicadas; de lo contrario responde `422`.
+        **Roles:** MAKER, ADMIN.
+      x-required-roles: [MAKER, ADMIN]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ParameterUpdate" }
+      responses:
+        "200":
+          description: Metadatos actualizados.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Parameter" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "412": { $ref: "#/components/responses/PreconditionFailed" }
+        "422": { $ref: "#/components/responses/UnprocessableContent" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+    delete:
+      tags: [Parameters]
+      operationId: retireParameter
+      summary: Dar de baja lógica una definición nunca publicada
+      description: |
+        Baja **lógica** (`status=INACTIVE`); nunca elimina físicamente y conserva historial y auditoría.
+        Solo es válida si el parámetro está en `DRAFT` (sin versiones publicadas). Para desactivar un parámetro
+        publicado se debe crear una `ChangeRequest` con `changeType=DEACTIVATE`, sujeta a Maker-Checker; en ese
+        caso este endpoint responde `409` (`PARAMETER_PUBLISHED`).
+        **Roles:** MAKER, ADMIN.
+      x-required-roles: [MAKER, ADMIN]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+      responses:
+        "204":
+          description: Baja lógica aplicada. El recurso sigue consultable con `status=INACTIVE`.
+          headers:
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "412": { $ref: "#/components/responses/PreconditionFailed" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+  /api/v1/parameters/{parameterId}/versions:
+    parameters:
+      - $ref: "#/components/parameters/ParameterId"
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/CorrelationId"
+    get:
+      tags: [Parameters]
+      operationId: listParameterVersions
+      summary: Listar el historial de versiones de un parámetro
+      description: |
+        Versiones publicadas del parámetro (vigente, programadas y expiradas), ordenadas por fecha de
+        aprobación descendente (la más reciente primero). **Roles:** MAKER, CHECKER, ADMIN, AUDITOR.
+      x-required-roles: [MAKER, CHECKER, ADMIN, AUDITOR]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Size"
+      responses:
+        "200":
+          description: Página de versiones del parámetro.
+          headers:
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ParameterVersionPage" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+  /api/v1/change-requests:
+    get:
+      tags: [Change Requests, Approvals]
+      operationId: listChangeRequests
+      summary: Listar propuestas de cambio
+      description: |
+        Con `status=PENDING_APPROVAL` actúa como bandeja del Checker. Un MAKER solo ve las propuestas que él creó;
+        CHECKER, ADMIN y AUDITOR ven todas. **Roles:** MAKER, CHECKER, ADMIN, AUDITOR.
+      x-required-roles: [MAKER, CHECKER, ADMIN, AUDITOR]
+      security:
+        - bearerAuth: []
+      parameters:
+        - {
+            name: status,
+            in: query,
+            schema: { $ref: "#/components/schemas/ChangeRequestStatus" },
+          }
+        - {
+            name: parameterId,
+            in: query,
+            schema: { $ref: "#/components/schemas/Uuid" },
+          }
+        - {
+            name: changeType,
+            in: query,
+            schema: { $ref: "#/components/schemas/ChangeType" },
+          }
+        - {
+            name: createdBy,
+            in: query,
+            schema: { type: string, minLength: 1, maxLength: 128 },
+          }
+        - {
+            name: createdFrom,
+            in: query,
+            description: Fecha-hora UTC mínima de creación (inclusive).,
+            schema: { type: string, format: date-time },
+          }
+        - {
+            name: createdTo,
+            in: query,
+            description: Fecha-hora UTC máxima de creación (inclusive).,
+            schema: { type: string, format: date-time },
+          }
+        - name: sort
+          in: query
+          description: "Campos permitidos: createdAt, updatedAt, status."
+          schema:
+            {
+              type: string,
+              pattern: "^(createdAt|updatedAt|status),(asc|desc)$",
+              default: "createdAt,desc",
+            }
+        - $ref: "#/components/parameters/Authorization"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Size"
+        - $ref: "#/components/parameters/CorrelationId"
+      responses:
+        "200":
+          description: Página de propuestas.
+          headers:
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChangeRequestPage" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+    post:
+      tags: [Change Requests]
+      operationId: createChangeRequest
+      summary: Crear y enviar propuesta de cambio a aprobación
+      description: |
+        Crea la propuesta de cambio y la envía directamente al flujo de aprobación Maker-Checker
+        en estado `PENDING_APPROVAL`. Valida el valor propuesto contra `dataType` y `constraints`
+        del parámetro. No altera el valor vigente hasta su aprobación por un Checker.
+        `baseVersionNumber` es obligatorio si el parámetro ya cuenta con versiones publicadas.
+        Si no hay versión vigente por expiración, debe indicarse la última versión publicada.
+        **Roles:** MAKER.
+      x-required-roles: [MAKER]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/CorrelationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChangeRequestCreate" }
+            examples:
+              scheduledLimitChange:
+                summary: Cambio programado de límite diario
+                value:
+                  parameterId: 3f2b8d1a-6c1e-4f43-9a52-0e7a1c5d9b10
+                  changeType: SET_VALUE
+                  proposedValue: "15000.00"
+                  baseVersionNumber: 4
+                  effectiveFrom: "2026-11-01T05:00:00Z"
+                  reason: Ajuste aprobado por el comité de riesgos CR-2026-118.
+      responses:
+        "201":
+          description: Propuesta creada y enviada a aprobación (`PENDING_APPROVAL`).
+          headers:
+            Location:
+              {
+                description: URI de la propuesta.,
+                schema: { type: string, format: uri-reference },
+              }
+            ETag: { $ref: "#/components/headers/ETag" }
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChangeRequest" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/UnprocessableContent" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+  /api/v1/change-requests/{changeRequestId}:
+    parameters:
+      - $ref: "#/components/parameters/ChangeRequestId"
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/CorrelationId"
+    get:
+      tags: [Change Requests, Approvals]
+      operationId: getChangeRequest
+      summary: Consultar una propuesta de cambio
+      description: "**Roles:** MAKER (solo propias), CHECKER, ADMIN, AUDITOR."
+      x-required-roles: [MAKER, CHECKER, ADMIN, AUDITOR]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Propuesta.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChangeRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+    delete:
+      tags: [Change Requests]
+      operationId: cancelChangeRequest
+      summary: Cancelar una propuesta en revisión
+      description: |
+        Cancelación lógica: la propuesta pasa a `CANCELLED` y se preserva en auditoría.
+        Permitido únicamente en estado `PENDING_APPROVAL` por su creador.
+        Una propuesta ya resuelta (`APPROVED` o `REJECTED`) no puede cancelarse (`409`).
+        **Roles:** MAKER (creador).
+      x-required-roles: [MAKER]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+      responses:
+        "204":
+          description: Propuesta cancelada exitosamente.
+          headers:
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "412": { $ref: "#/components/responses/PreconditionFailed" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+  /api/v1/change-requests/{changeRequestId}/approval:
+    parameters:
+      - $ref: "#/components/parameters/ChangeRequestId"
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/CorrelationId"
+    get:
+      tags: [Approvals]
+      operationId: getChangeRequestApproval
+      summary: Consultar la decisión de aprobación
+      description: "`404` si la propuesta no fue aprobada. **Roles:** MAKER (propias), CHECKER, ADMIN, AUDITOR."
+      x-required-roles: [MAKER, CHECKER, ADMIN, AUDITOR]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Decisión de aprobación.
+          headers:
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApprovalDecision" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+    post:
+      tags: [Approvals]
+      operationId: approveChangeRequest
+      summary: Aprobar una propuesta
+      description: |
+        Crea la decisión de aprobación (subrecurso singleton: una propuesta tiene a lo sumo una decisión).
+        Reglas: la propuesta debe estar `PENDING_APPROVAL`; el aprobador **no puede ser el creador**
+        (`403` `MAKER_CHECKER_VIOLATION`); `If-Match` debe corresponder a la propuesta revisada (`412`);
+        `baseVersionNumber` debe seguir siendo la versión vigente, o la última publicada si ninguna está vigente (`409` `BASE_VERSION_MISMATCH`);
+        `effectiveFrom` pasada o ausente publica de inmediato (versión `ACTIVE`), futura la deja `SCHEDULED`.
+        Se crea una nueva `ParameterVersion` inmutable. Con `Idempotency-Key`, un reintento no duplica la versión.
+        La aprobación es síncrona: el contrato no garantiza el tiempo de propagación a consumidores.
+        **Roles:** CHECKER.
+      x-required-roles: [CHECKER]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ApprovalCreate" }
+            examples:
+              approve:
+                value:
+                  { comment: Validado contra la política de límites vigente. }
+      responses:
+        "201":
+          description: Aprobación registrada y versión creada.
+          headers:
+            Location:
+              {
+                description: URI de la decisión.,
+                schema: { type: string, format: uri-reference },
+              }
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApprovalDecision" }
+              examples:
+                scheduled:
+                  value:
+                    changeRequestId: 9a7c1e52-2b0f-4d8e-8a43-5c9d7e1f2a60
+                    decision: APPROVED
+                    decidedBy: checker.riesgos@banco.example
+                    decidedAt: "2026-10-27T19:40:01Z"
+                    comment: Validado contra la política de límites vigente.
+                    resultingVersionNumber: 5
+                    publicationStatus: SCHEDULED
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "412": { $ref: "#/components/responses/PreconditionFailed" }
+        "422": { $ref: "#/components/responses/UnprocessableContent" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+  /api/v1/change-requests/{changeRequestId}/rejection:
+    parameters:
+      - $ref: "#/components/parameters/ChangeRequestId"
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/CorrelationId"
+    get:
+      tags: [Approvals]
+      operationId: getChangeRequestRejection
+      summary: Consultar la decisión de rechazo
+      description: "`404` si la propuesta no fue rechazada. **Roles:** MAKER (propias), CHECKER, ADMIN, AUDITOR."
+      x-required-roles: [MAKER, CHECKER, ADMIN, AUDITOR]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Decisión de rechazo.
+          headers:
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApprovalDecision" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+    post:
+      tags: [Approvals]
+      operationId: rejectChangeRequest
+      summary: Rechazar una propuesta con justificación
+      description: |
+        Transición `PENDING_APPROVAL` → `REJECTED`. El motivo es obligatorio. El rechazo no altera valores
+        vigentes. Mismas reglas de separación de funciones, `If-Match` e idempotencia que la aprobación.
+        **Roles:** CHECKER.
+      x-required-roles: [CHECKER]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RejectionCreate" }
+            examples:
+              reject:
+                value:
+                  {
+                    reason: El valor excede el límite regulatorio vigente para el segmento RETAIL.,
+                  }
+      responses:
+        "201":
+          description: Rechazo registrado.
+          headers:
+            Location:
+              {
+                description: URI de la decisión.,
+                schema: { type: string, format: uri-reference },
+              }
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApprovalDecision" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "412": { $ref: "#/components/responses/PreconditionFailed" }
+        "422": { $ref: "#/components/responses/UnprocessableContent" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+  /api/v1/parameter-values:
+    get:
+      tags: [Parameter Values]
+      operationId: listCurrentParameterValues
+      summary: Consultar valores vigentes (lote o filtrado)
+      description: |
+        Proyección de lectura optimizada: solo valor, tipo, versión y vigencia; sin auditoría ni datos
+        administrativos. Los cambios `PENDING_APPROVAL` o `SCHEDULED` no se reflejan hasta su entrada en vigor.
+        Con `codes`, los códigos no resolubles se informan en `unavailable` (con motivo) sin fallar el lote.
+        Admite `If-None-Match` (`304`). La latencia objetivo (< 50 ms) es un requisito de calidad a validar.
+        **Actores:** CONSUMER (aplicaciones internas).
+      x-required-roles: [CONSUMER]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: codes
+          in: query
+          description: Lista de códigos separados por coma (máximo 50).
+          style: form
+          explode: false
+          schema:
+            type: array
+            minItems: 1
+            maxItems: 50
+            uniqueItems: true
+            items: { $ref: "#/components/schemas/ParameterCode" }
+        - {
+            name: businessDomain,
+            in: query,
+            schema: { $ref: "#/components/schemas/BusinessDomain" },
+          }
+        - {
+            name: category,
+            in: query,
+            schema: { $ref: "#/components/schemas/Category" },
+          }
+        - {
+            name: channel,
+            in: query,
+            schema: { $ref: "#/components/schemas/ScopeToken" },
+          }
+        - {
+            name: product,
+            in: query,
+            schema: { $ref: "#/components/schemas/ScopeToken" },
+          }
+        - {
+            name: segment,
+            in: query,
+            schema: { $ref: "#/components/schemas/ScopeToken" },
+          }
+        - $ref: "#/components/parameters/Authorization"
+        - $ref: "#/components/parameters/IfNoneMatch"
+        - $ref: "#/components/parameters/Page"
+        - name: size
+          in: query
+          description: Elementos por página (máximo 200 para consumo en lote).
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - $ref: "#/components/parameters/CorrelationId"
+      responses:
+        "200":
+          description: Valores vigentes.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+            Cache-Control:
+              {
+                description: Directiva de caché para consumidores.,
+                schema:
+                  {
+                    type: string,
+                    examples: ["private, max-age=0, must-revalidate"],
+                  },
+              }
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CurrentValuePage" }
+        "304": { $ref: "#/components/responses/NotModified" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+  /api/v1/parameter-values/{code}:
+    parameters:
+      - name: code
+        in: path
+        required: true
+        description: Código funcional del parámetro.
+        schema: { $ref: "#/components/schemas/ParameterCode" }
+      - $ref: "#/components/parameters/Authorization"
+      - $ref: "#/components/parameters/CorrelationId"
+    get:
+      tags: [Parameter Values]
+      operationId: getCurrentParameterValue
+      summary: Obtener el valor vigente de un parámetro
+      description: |
+        Devuelve la versión `ACTIVE` en el instante de la consulta. `404` con `businessCode`
+        `PARAMETER_NOT_FOUND`, `PARAMETER_INACTIVE` o `PARAMETER_NOT_EFFECTIVE` (sin versión vigente todavía).
+        Se modela como proyección de lectura por código (no como subrecurso `/parameters/{id}/current`) para no
+        acoplar consumidores al modelo administrativo. **Actores:** CONSUMER.
+      x-required-roles: [CONSUMER]
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IfNoneMatch"
+      responses:
+        "200":
+          description: Valor vigente.
+          headers:
+            ETag: { $ref: "#/components/headers/ETag" }
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CurrentValue" }
+              examples:
+                transferLimit:
+                  value:
+                    code: TRANSFER_DAILY_LIMIT
+                    dataType: MONEY
+                    value: "10000.00"
+                    unit: USD
+                    scope: { channel: MOBILE, segment: RETAIL }
+                    versionNumber: 4
+                    effectiveFrom: "2026-06-01T05:00:00Z"
+                    effectiveTo: null
+        "304": { $ref: "#/components/responses/NotModified" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+  /api/v1/audit-events:
+    get:
+      tags: [Audit]
+      operationId: listAuditEvents
+      summary: Consultar eventos de auditoría
+      description: |
+        Registro inmutable y de solo lectura (no existen POST, PUT ni DELETE). Los eventos los genera el sistema.
+        Requiere al menos un filtro acotado en tiempo o por parámetro para evitar barridos completos
+        (propuesta; ver validaciones). **Roles:** AUDITOR, ADMIN.
+      x-required-roles: [AUDITOR, ADMIN]
+      security:
+        - bearerAuth: []
+      parameters:
+        - {
+            name: parameterId,
+            in: query,
+            schema: { $ref: "#/components/schemas/Uuid" },
+          }
+        - {
+            name: actor,
+            in: query,
+            description: Identificador del usuario o aplicación.,
+            schema: { type: string, minLength: 1, maxLength: 128 },
+          }
+        - {
+            name: operation,
+            in: query,
+            schema: { $ref: "#/components/schemas/AuditOperation" },
+          }
+        - {
+            name: outcome,
+            in: query,
+            schema: { $ref: "#/components/schemas/AuditOutcome" },
+          }
+        - {
+            name: correlationId,
+            in: query,
+            schema:
+              {
+                type: string,
+                minLength: 8,
+                maxLength: 64,
+                pattern: "^[A-Za-z0-9._-]+$",
+              },
+          }
+        - {
+            name: from,
+            in: query,
+            description: Fecha-hora UTC inicial (inclusive).,
+            schema: { type: string, format: date-time },
+          }
+        - {
+            name: to,
+            in: query,
+            description: Fecha-hora UTC final (inclusive).,
+            schema: { type: string, format: date-time },
+          }
+        - name: sort
+          in: query
+          description: "Campos permitidos: occurredAt."
+          schema:
+            {
+              type: string,
+              pattern: "^occurredAt,(asc|desc)$",
+              default: "occurredAt,desc",
+            }
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Size"
+        - $ref: "#/components/parameters/CorrelationId"
+      responses:
+        "200":
+          description: Página de eventos.
+          headers:
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuditEventPage" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+  /api/v1/audit-events/{eventId}:
+    parameters:
+      - name: eventId
+        in: path
+        required: true
+        schema: { $ref: "#/components/schemas/Uuid" }
+      - $ref: "#/components/parameters/CorrelationId"
+    get:
+      tags: [Audit]
+      operationId: getAuditEvent
+      summary: Consultar el detalle de un evento de auditoría
+      description: "**Roles:** AUDITOR, ADMIN."
+      x-required-roles: [AUDITOR, ADMIN]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Evento de auditoría.
+          headers:
+            X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuditEvent" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Token de acceso Bearer (JWT).
+        Debe enviarse en todas las solicitudes protegidas dentro del encabezado HTTP:
+        `Authorization: Bearer <token>`
+        Se obtiene mediante el endpoint de autenticación `POST /api/v1/auth/token`.
+  headers:
+    CorrelationId:
+      description: Identificador de correlación de la solicitud (se devuelve el recibido o uno generado).
+      schema:
+        {
+          type: string,
+          minLength: 8,
+          maxLength: 64,
+          pattern: "^[A-Za-z0-9._-]+$",
+        }
+    ETag:
+      description: Validador opaco de la representación, usado en `If-Match` / `If-None-Match`.
+      schema: { type: string, examples: ['"v7"'] }
+    RetryAfter:
+      description: Segundos a esperar antes de reintentar.
+      schema: { type: integer, minimum: 0 }
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      required: true
+      description: "Encabezado de autenticación Bearer JWT (formato: `Bearer <token>`)"
+      schema:
+        type: string
+        example: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJtYWtlciJ9.signature"
+    ParameterId:
+      name: parameterId
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/Uuid" }
+    ChangeRequestId:
+      name: changeRequestId
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/Uuid" }
+    VersionNumber:
+      name: versionNumber
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+    Page:
+      name: page
+      in: query
+      description: Número de página, base 0.
+      schema: { type: integer, minimum: 0, default: 0 }
+    Size:
+      name: size
+      in: query
+      description: Elementos por página (máximo 100).
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    CorrelationId:
+      name: X-Correlation-Id
+      in: header
+      description: Identificador de correlación opcional; si falta, el servidor genera uno.
+      schema:
+        {
+          type: string,
+          minLength: 8,
+          maxLength: 64,
+          pattern: "^[A-Za-z0-9._-]+$",
+        }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: UUID único por intención de operación; se conserva al menos 24 h (valor de retención por confirmar).
+      schema: { type: string, format: uuid }
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: ETag de la representación sobre la que se decide o modifica.
+      schema: { type: string, minLength: 3, maxLength: 128 }
+    IfNoneMatch:
+      name: If-None-Match
+      in: header
+      description: ETag cacheado; si coincide se responde `304` sin cuerpo.
+      schema: { type: string, minLength: 3, maxLength: 128 }
+  schemas:
+    AuthRequest:
+      type: object
+      required: [username, password]
+      additionalProperties: false
+      properties:
+        username:
+          type: string
+          description: Identificador de usuario o cliente.
+          example: maker.pagos@banco.example
+        password:
+          type: string
+          format: password
+          description: Contraseña del usuario o secreto del cliente.
+          example: "Password123!"
+    AuthResponse:
+      type: object
+      required: [accessToken, tokenType, expiresIn]
+      additionalProperties: false
+      properties:
+        accessToken:
+          type: string
+          description: Token de acceso JWT generado.
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJtYWtlci5wYWdvcyIsInJvbGVzIjpbIk1BS0VSIl19.signature"
+        tokenType:
+          type: string
+          description: Tipo de autorización a utilizar en el encabezado Authorization.
+          example: "Bearer"
+        expiresIn:
+          type: integer
+          description: Tiempo de expiración del token en segundos.
+          example: 3600
+        roles:
+          type: array
+          description: Roles o perfiles asignados.
+          items:
+            type: string
+          example: ["MAKER"]
+    Uuid:
+      type: string
+      format: uuid
+    ParameterCode:
+      type: string
+      minLength: 3
+      maxLength: 64
+      pattern: "^[A-Z][A-Z0-9_]{2,63}$"
+      description: Código funcional inmutable en MAYÚSCULAS_CON_GUION_BAJO (propuesta de convención).
+      examples: [TRANSFER_DAILY_LIMIT]
+    Category:
+      type: string
+      minLength: 2
+      maxLength: 32
+      pattern: "^[A-Z][A-Z0-9_]*$"
+      examples: [LIMITS]
+    BusinessDomain:
+      type: string
+      minLength: 2
+      maxLength: 32
+      pattern: "^[A-Z][A-Z0-9_]*$"
+      description: Dominio de negocio (p. ej. PAYMENTS, CARDS, CREDIT). Catálogo cerrado por confirmar con el negocio.
+      examples: [PAYMENTS]
+    ScopeToken:
+      type: string
+      minLength: 2
+      maxLength: 32
+      pattern: "^[A-Z][A-Z0-9_]*$"
+    Scope:
+      type: object
+      description: Ámbito de aplicación del parámetro (canal, producto, segmento). Los campos ausentes aplican a todos.
+      additionalProperties: false
+      properties:
+        channel:
+          type: string
+          example: MOBILE
+        product:
+          type: string
+          example: CREDIT_CARD
+        segment:
+          type: string
+          example: RETAIL
+    DataType:
+      type: string
+      enum: [MONEY, PERCENTAGE, INTEGER, BOOLEAN, DATE, STRING, JSON]
+    ParameterConstraints:
+      type: object
+      description: Restricciones opcionales para validar el valor propuesto según su tipo.
+      additionalProperties: false
+      properties:
+        min:
+          type: number
+          description: Valor numérico mínimo permitido.
+        max:
+          type: number
+          description: Valor numérico máximo permitido.
+        allowedValues:
+          type: array
+          description: Lista de valores permitidos para parámetros de catálogo o discretos.
+          items:
+            type: string
+        pattern:
+          type: string
+          description: Expresión regular para validar formato en cadenas.
+    ParameterValue:
+      description: Valor del parámetro según su `dataType` (número, texto, booleano, fecha ISO o estructura JSON).
+      oneOf:
+        - type: string
+        - type: number
+        - type: boolean
+        - type: object
+        - type: array
+      examples: ["15000.00", 25, true, "2026-12-31"]
+    ParameterStatus:
+      type: string
+      description: |
+        `DRAFT`: definida sin versión publicada. `ACTIVE`: tiene una versión vigente. `INACTIVE`: desactivada
+        (baja lógica); no se sirve a consumidores pero conserva historial.
+      enum: [DRAFT, ACTIVE, INACTIVE]
+    ParameterCreate:
+      type: object
+      required: [code, name, dataType, category, businessDomain]
+      additionalProperties: false
+      properties:
+        code: { $ref: "#/components/schemas/ParameterCode" }
+        name: { type: string, minLength: 3, maxLength: 120 }
+        description: { type: string, maxLength: 1000 }
+        dataType: { $ref: "#/components/schemas/DataType" }
+        category: { $ref: "#/components/schemas/Category" }
+        businessDomain: { $ref: "#/components/schemas/BusinessDomain" }
+        scope: { $ref: "#/components/schemas/Scope" }
+        unit:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 16,
+            description: "Unidad de medida (p. ej. USD, %, DAYS).",
+          }
+        constraints: { $ref: "#/components/schemas/ParameterConstraints" }
+    ParameterUpdate:
+      type: object
+      required: [name, category, businessDomain]
+      additionalProperties: false
+      properties:
+        name: { type: string, minLength: 3, maxLength: 120 }
+        description: { type: string, maxLength: 1000 }
+        category: { $ref: "#/components/schemas/Category" }
+        businessDomain: { $ref: "#/components/schemas/BusinessDomain" }
+        unit: { type: string, minLength: 1, maxLength: 16 }
+        constraints: { $ref: "#/components/schemas/ParameterConstraints" }
+    Parameter:
+      type: object
+      required:
+        [
+          id,
+          code,
+          name,
+          dataType,
+          category,
+          businessDomain,
+          status,
+          createdAt,
+          createdBy,
+        ]
+      additionalProperties: false
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        code: { $ref: "#/components/schemas/ParameterCode" }
+        name: { type: string, minLength: 3, maxLength: 120 }
+        description: { type: string, maxLength: 1000 }
+        dataType: { $ref: "#/components/schemas/DataType" }
+        category: { $ref: "#/components/schemas/Category" }
+        businessDomain: { $ref: "#/components/schemas/BusinessDomain" }
+        scope: { $ref: "#/components/schemas/Scope" }
+        unit: { type: string, minLength: 1, maxLength: 16 }
+        constraints: { $ref: "#/components/schemas/ParameterConstraints" }
+        status: { $ref: "#/components/schemas/ParameterStatus" }
+        currentVersionNumber:
+          type: [integer, "null"]
+          minimum: 1
+          description: Referencia informativa a la versión vigente; `null` si no hay ninguna.
+        currentValue:
+          $ref: "#/components/schemas/ParameterValue"
+          description: |
+            Valor de la versión vigente (`currentVersionNumber`). Solo se incluye en el listado
+            (`GET /parameters`); se omite si no hay versión vigente o si esta es una desactivación.
+            No forma parte del recurso ni de su `ETag`.
+        createdAt: { type: string, format: date-time }
+        createdBy: { type: string, maxLength: 128 }
+        updatedAt: { type: string, format: date-time }
+        updatedBy: { type: string, maxLength: 128 }
+      examples:
+        - id: 3f2b8d1a-6c1e-4f43-9a52-0e7a1c5d9b10
+          code: TRANSFER_DAILY_LIMIT
+          name: Límite diario de transferencias
+          dataType: MONEY
+          category: LIMITS
+          businessDomain: PAYMENTS
+          scope: { channel: MOBILE, segment: RETAIL }
+          unit: USD
+          constraints:
+            min: 0.00
+            max: 50000.00
+          status: ACTIVE
+          currentVersionNumber: 4
+          createdAt: "2026-01-10T14:00:00Z"
+          createdBy: maker.pagos@banco.example
+          updatedAt: "2026-06-01T05:00:00Z"
+          updatedBy: system
+    ChangeType:
+      type: string
+      description: "`SET_VALUE` define o cambia el valor; `DEACTIVATE`/`REACTIVATE` cambian la publicación del parámetro."
+      enum: [SET_VALUE, DEACTIVATE, REACTIVATE]
+    ChangeRequestStatus:
+      type: string
+      description: Estado del flujo de aprobación Maker-Checker.
+      enum: [PENDING_APPROVAL, APPROVED, REJECTED, CANCELLED]
+    ChangeRequestCreate:
+      type: object
+      required: [parameterId, changeType, reason]
+      additionalProperties: false
+      properties:
+        parameterId: { $ref: "#/components/schemas/Uuid" }
+        changeType: { $ref: "#/components/schemas/ChangeType" }
+        proposedValue:
+          description: Valor propuesto. Requerido si `changeType=SET_VALUE`.
+          $ref: "#/components/schemas/ParameterValue"
+        baseVersionNumber:
+          type: integer
+          minimum: 1
+          description: Versión vigente sobre la que se basa la propuesta (control de consistencia).
+        effectiveFrom:
+          type: string
+          format: date-time
+          description: Inicio de vigencia (UTC). Omitir para aplicación inmediata tras aprobación.
+        effectiveTo:
+          type: string
+          format: date-time
+          description: Fin de vigencia opcional; debe ser posterior a `effectiveFrom`.
+        reason:
+          type: string
+          minLength: 5
+          maxLength: 500
+          description: Justificación para revisión y decisión del Checker.
+    ChangeRequest:
+      type: object
+      required:
+        [
+          id,
+          parameterId,
+          parameterCode,
+          changeType,
+          status,
+          reason,
+          createdAt,
+          createdBy,
+        ]
+      additionalProperties: false
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        parameterId: { $ref: "#/components/schemas/Uuid" }
+        parameterCode: { $ref: "#/components/schemas/ParameterCode" }
+        changeType: { $ref: "#/components/schemas/ChangeType" }
+        status: { $ref: "#/components/schemas/ChangeRequestStatus" }
+        proposedValue: { $ref: "#/components/schemas/ParameterValue" }
+        baseVersionNumber: { type: integer, minimum: 1 }
+        resultingVersionNumber:
+          type: integer
+          minimum: 1
+          description: Número de versión generada (solo al ser aprobada).
+        effectiveFrom: { type: string, format: date-time }
+        effectiveTo: { type: string, format: date-time }
+        reason: { type: string, maxLength: 500 }
+        createdAt: { type: string, format: date-time }
+        createdBy: { type: string, maxLength: 128 }
+        decidedAt: { type: string, format: date-time }
+        decidedBy: { type: string, maxLength: 128 }
+      examples:
+        - id: 9a7c1e52-2b0f-4d8e-8a43-5c9d7e1f2a60
+          parameterId: 3f2b8d1a-6c1e-4f43-9a52-0e7a1c5d9b10
+          parameterCode: TRANSFER_DAILY_LIMIT
+          changeType: SET_VALUE
+          status: PENDING_APPROVAL
+          proposedValue: "15000.00"
+          baseVersionNumber: 4
+          effectiveFrom: "2026-11-01T05:00:00Z"
+          reason: Ajuste aprobado por el comité de riesgos CR-2026-118.
+          createdAt: "2026-10-27T18:10:00Z"
+          createdBy: maker.pagos@banco.example
+    ApprovalCreate:
+      type: object
+      additionalProperties: false
+      properties:
+        comment: { type: string, maxLength: 500 }
+    RejectionCreate:
+      type: object
+      required: [reason]
+      additionalProperties: false
+      properties:
+        reason: { type: string, minLength: 10, maxLength: 500 }
+    ApprovalDecision:
+      type: object
+      required: [changeRequestId, decision, decidedBy, decidedAt]
+      additionalProperties: false
+      properties:
+        changeRequestId: { $ref: "#/components/schemas/Uuid" }
+        decision: { type: string, enum: [APPROVED, REJECTED] }
+        decidedBy: { type: string, maxLength: 128 }
+        decidedAt: { type: string, format: date-time }
+        comment:
+          {
+            type: string,
+            maxLength: 500,
+            description: Comentario de aprobación.,
+          }
+        rejectionReason: { type: string, minLength: 10, maxLength: 500 }
+        resultingVersionNumber: { type: integer, minimum: 1 }
+        publicationStatus:
+          $ref: "#/components/schemas/VersionStatus"
+          description: Estado de publicación resultante (solo si `decision=APPROVED`).
+    VersionStatus:
+      type: string
+      description: "`SCHEDULED` (vigencia futura), `ACTIVE` (vigente), `EXPIRED` (reemplazada o vencida)."
+      enum: [SCHEDULED, ACTIVE, EXPIRED]
+    ParameterVersion:
+      type: object
+      required:
+        [
+          parameterId,
+          versionNumber,
+          status,
+          changeType,
+          effectiveFrom,
+          changeRequestId,
+          createdBy,
+          approvedBy,
+          approvedAt,
+        ]
+      additionalProperties: false
+      properties:
+        parameterId: { $ref: "#/components/schemas/Uuid" }
+        versionNumber: { type: integer, minimum: 1 }
+        status: { $ref: "#/components/schemas/VersionStatus" }
+        changeType: { $ref: "#/components/schemas/ChangeType" }
+        value: { $ref: "#/components/schemas/ParameterValue" }
+        effectiveFrom: { type: string, format: date-time }
+        effectiveTo: { type: [string, "null"], format: date-time }
+        changeRequestId: { $ref: "#/components/schemas/Uuid" }
+        reason: { type: string, maxLength: 500 }
+        createdBy: { type: string, maxLength: 128 }
+        approvedBy: { type: string, maxLength: 128 }
+        approvedAt: { type: string, format: date-time }
+      examples:
+        - parameterId: 3f2b8d1a-6c1e-4f43-9a52-0e7a1c5d9b10
+          versionNumber: 4
+          status: ACTIVE
+          changeType: SET_VALUE
+          value: "10000.00"
+          effectiveFrom: "2026-06-01T05:00:00Z"
+          effectiveTo: null
+          changeRequestId: 7d1e0c33-5a1b-47c2-9e55-1b0f6a2c8d41
+          reason: Revisión semestral de límites.
+          createdBy: maker.pagos@banco.example
+          approvedBy: checker.riesgos@banco.example
+          approvedAt: "2026-05-28T16:20:00Z"
+    CurrentValue:
+      type: object
+      description: Proyección mínima para consumo. Sin datos de auditoría ni administrativos.
+      required: [code, dataType, value, versionNumber, effectiveFrom]
+      additionalProperties: false
+      properties:
+        code: { $ref: "#/components/schemas/ParameterCode" }
+        dataType: { $ref: "#/components/schemas/DataType" }
+        value: { $ref: "#/components/schemas/ParameterValue" }
+        unit: { type: string, maxLength: 16 }
+        scope: { $ref: "#/components/schemas/Scope" }
+        versionNumber: { type: integer, minimum: 1 }
+        effectiveFrom: { type: string, format: date-time }
+        effectiveTo: { type: [string, "null"], format: date-time }
+    UnavailableValue:
+      type: object
+      required: [code, reason]
+      additionalProperties: false
+      properties:
+        code: { $ref: "#/components/schemas/ParameterCode" }
+        reason: { type: string, enum: [NOT_FOUND, INACTIVE, NOT_EFFECTIVE] }
+    CurrentValuePage:
+      type: object
+      required: [items, page]
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/CurrentValue" }
+        unavailable:
+          type: array
+          description: Códigos solicitados en `codes` que no pudieron resolverse.
+          items: { $ref: "#/components/schemas/UnavailableValue" }
+        page: { $ref: "#/components/schemas/PageMetadata" }
+    PageMetadata:
+      type: object
+      required: [page, size, totalElements, totalPages]
+      additionalProperties: false
+      properties:
+        page: { type: integer, minimum: 0 }
+        size: { type: integer, minimum: 1, maximum: 200 }
+        totalElements: { type: integer, format: int64, minimum: 0 }
+        totalPages: { type: integer, minimum: 0 }
+    ParameterPage:
+      type: object
+      required: [items, page]
+      additionalProperties: false
+      properties:
+        items:
+          { type: array, items: { $ref: "#/components/schemas/Parameter" } }
+        page: { $ref: "#/components/schemas/PageMetadata" }
+    ParameterVersionPage:
+      type: object
+      required: [items, page]
+      additionalProperties: false
+      properties:
+        items:
+          {
+            type: array,
+            items: { $ref: "#/components/schemas/ParameterVersion" },
+          }
+        page: { $ref: "#/components/schemas/PageMetadata" }
+    ChangeRequestPage:
+      type: object
+      required: [items, page]
+      additionalProperties: false
+      properties:
+        items:
+          { type: array, items: { $ref: "#/components/schemas/ChangeRequest" } }
+        page: { $ref: "#/components/schemas/PageMetadata" }
+    AuditOperation:
+      type: string
+      enum:
+        - PARAMETER_CREATED
+        - PARAMETER_UPDATED
+        - PARAMETER_RETIRED
+        - CHANGE_REQUEST_CREATED
+        - CHANGE_REQUEST_CANCELLED
+        - CHANGE_REQUEST_APPROVED
+        - CHANGE_REQUEST_REJECTED
+        - VERSION_PUBLISHED
+        - VERSION_ACTIVATED
+        - VERSION_EXPIRED
+        - ACCESS_DENIED
+    AuditOutcome:
+      type: string
+      enum: [SUCCESS, DENIED, FAILED]
+    AuditActor:
+      type: object
+      required: [id, type]
+      additionalProperties: false
+      properties:
+        id: { type: string, maxLength: 128 }
+        type: { type: string, enum: [USER, APPLICATION, SYSTEM] }
+        roles:
+          type: array
+          items:
+            { type: string, enum: [MAKER, CHECKER, ADMIN, AUDITOR, CONSUMER] }
+    AuditEvent:
+      type: object
+      required:
+        [id, occurredAt, actor, operation, resourceType, outcome, correlationId]
+      additionalProperties: false
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        occurredAt:
+          { type: string, format: date-time, description: Instante UTC. }
+        actor: { $ref: "#/components/schemas/AuditActor" }
+        operation: { $ref: "#/components/schemas/AuditOperation" }
+        resourceType:
+          { type: string, enum: [PARAMETER, CHANGE_REQUEST, PARAMETER_VERSION] }
+        resourceId: { $ref: "#/components/schemas/Uuid" }
+        parameterId: { $ref: "#/components/schemas/Uuid" }
+        versionNumber: { type: integer, minimum: 1 }
+        outcome: { $ref: "#/components/schemas/AuditOutcome" }
+        reason: { type: string, maxLength: 500 }
+        correlationId: { type: string, minLength: 8, maxLength: 64 }
+        origin:
+          type: object
+          description: Origen mínimo para investigación (no incluye credenciales ni tokens).
+          additionalProperties: false
+          properties:
+            sourceApplication: { type: string, maxLength: 64 }
+            ipAddress: { type: string, maxLength: 45 }
+        details:
+          type: object
+          description: Resumen del cambio (valores anterior/nuevo) sin datos sensibles.
+          additionalProperties: true
+      examples:
+        - id: c4e9a1d0-3b7f-4a52-8d16-2f0e5b9a7c33
+          occurredAt: "2026-10-27T19:40:01Z"
+          actor:
+            { id: checker.riesgos@banco.example, type: USER, roles: [CHECKER] }
+          operation: CHANGE_REQUEST_APPROVED
+          resourceType: CHANGE_REQUEST
+          resourceId: 9a7c1e52-2b0f-4d8e-8a43-5c9d7e1f2a60
+          parameterId: 3f2b8d1a-6c1e-4f43-9a52-0e7a1c5d9b10
+          versionNumber: 5
+          outcome: SUCCESS
+          correlationId: 8f14e45f-ceea-467a
+          origin: { sourceApplication: rma-portal }
+    AuditEventPage:
+      type: object
+      required: [items, page]
+      additionalProperties: false
+      properties:
+        items:
+          { type: array, items: { $ref: "#/components/schemas/AuditEvent" } }
+        page: { $ref: "#/components/schemas/PageMetadata" }
+    FieldError:
+      type: object
+      required: [field, code, message]
+      additionalProperties: false
+      properties:
+        field:
+          {
+            type: string,
+            description: Ruta JSON Pointer o nombre del parámetro.,
+          }
+        code: { type: string, maxLength: 64 }
+        message: { type: string, maxLength: 300 }
+    Problem:
+      type: object
+      description: Error según RFC 9457 (`application/problem+json`).
+      required: [type, title, status, businessCode, correlationId]
+      properties:
+        type:
+          {
+            type: string,
+            format: uri-reference,
+            description: URI que identifica el tipo de problema.,
+          }
+        title: { type: string, maxLength: 200 }
+        status: { type: integer, minimum: 400, maximum: 599 }
+        detail:
+          {
+            type: string,
+            maxLength: 1000,
+            description: Descripción segura para el consumidor.,
+          }
+        instance:
+          {
+            type: string,
+            format: uri-reference,
+            description: URI de la operación o recurso implicado.,
+          }
+        businessCode:
+          type: string
+          maxLength: 64
+          description: Código de negocio estable (p. ej. MAKER_CHECKER_VIOLATION, INVALID_STATE_TRANSITION, BASE_VERSION_MISMATCH, PARAMETER_PUBLISHED, DUPLICATE_CODE, IDEMPOTENCY_KEY_REUSED, VALUE_OUT_OF_RANGE).
+        correlationId: { type: string, minLength: 8, maxLength: 64 }
+        errors:
+          type: array
+          items: { $ref: "#/components/schemas/FieldError" }
+      additionalProperties: true
+  responses:
+    NotModified:
+      description: El recurso no cambió respecto de `If-None-Match`. Sin cuerpo.
+      headers:
+        ETag: { $ref: "#/components/headers/ETag" }
+        X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+    BadRequest:
+      description: Solicitud malformada o parámetros inválidos (sintaxis, tipos, límites de paginación).
+      headers:
+        X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+          example:
+            type: https://api.banco.example/problems/validation-error
+            title: Solicitud inválida
+            status: 400
+            detail: El parámetro size debe ser menor o igual a 100.
+            businessCode: INVALID_REQUEST
+            correlationId: 8f14e45f-ceea-467a
+            errors:
+              [
+                {
+                  field: size,
+                  code: MAX_EXCEEDED,
+                  message: Debe ser menor o igual a 100.,
+                },
+              ]
+    Unauthorized:
+      description: Credenciales ausentes, inválidas o expiradas.
+      headers:
+        WWW-Authenticate: { schema: { type: string } }
+        X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    Forbidden:
+      description: Autenticado sin rol/scope suficiente, o violación de separación de funciones (`MAKER_CHECKER_VIOLATION`).
+      headers:
+        X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+          example:
+            type: https://api.banco.example/problems/maker-checker-violation
+            title: Separación de funciones
+            status: 403
+            detail: El creador de la propuesta no puede aprobarla.
+            businessCode: MAKER_CHECKER_VIOLATION
+            correlationId: 8f14e45f-ceea-467a
+    NotFound:
+      description: Recurso inexistente o no visible para el solicitante.
+      headers:
+        X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+          example:
+            type: https://api.banco.example/problems/not-found
+            title: Recurso no encontrado
+            status: 404
+            businessCode: PARAMETER_NOT_FOUND
+            correlationId: 8f14e45f-ceea-467a
+    Conflict:
+      description: Conflicto con el estado actual (código duplicado, transición inválida, versión base desactualizada, parámetro publicado).
+      headers:
+        X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+          example:
+            type: https://api.banco.example/problems/invalid-state-transition
+            title: Transición de estado inválida
+            status: 409
+            detail: La propuesta ya fue resuelta y no puede aprobarse nuevamente.
+            businessCode: INVALID_STATE_TRANSITION
+            correlationId: 8f14e45f-ceea-467a
+    PreconditionFailed:
+      description: El ETag de `If-Match` no coincide con la representación actual (concurrencia optimista).
+      headers:
+        ETag: { $ref: "#/components/headers/ETag" }
+        X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+          example:
+            type: https://api.banco.example/problems/precondition-failed
+            title: Precondición fallida
+            status: 412
+            detail: El recurso fue modificado. Vuelva a consultarlo.
+            businessCode: STALE_ETAG
+            correlationId: 8f14e45f-ceea-467a
+    PreconditionRequired:
+      description: Falta el encabezado `If-Match` requerido.
+      headers:
+        X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    UnprocessableContent:
+      description: Sintaxis válida pero contenido semánticamente inválido (valor fuera de rango, tipo distinto de `dataType`, restricciones incompatibles, reutilización de `Idempotency-Key`).
+      headers:
+        X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+          example:
+            type: https://api.banco.example/problems/validation-error
+            title: Valor no válido
+            status: 422
+            detail: El valor excede el máximo permitido por las restricciones del parámetro.
+            businessCode: VALUE_OUT_OF_RANGE
+            correlationId: 8f14e45f-ceea-467a
+            errors:
+              [
+                {
+                  field: proposedValue,
+                  code: MAX_EXCEEDED,
+                  message: Máximo permitido 50000.00.,
+                },
+              ]
+    TooManyRequests:
+      description: Límite de tasa excedido (aplicado en el API Gateway).
+      headers:
+        Retry-After: { $ref: "#/components/headers/RetryAfter" }
+        X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    InternalError:
+      description: Error interno. No expone trazas ni detalles de infraestructura.
+      headers:
+        X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    ServiceUnavailable:
+      description: Servicio no disponible temporalmente. Los consumidores deben usar el último valor conocido y reintentar con backoff.
+      headers:
+        Retry-After: { $ref: "#/components/headers/RetryAfter" }
+        X-Correlation-Id: { $ref: "#/components/headers/CorrelationId" }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
