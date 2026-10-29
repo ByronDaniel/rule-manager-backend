@@ -19,7 +19,7 @@ export const apps = [{
 export const deploy = {
   production: {
     user: 'ubuntu',
-    host: '52.70.140.42',
+    host: '100.48.25.37',
     ref: 'origin/main',
     repo: 'git@github.com:ByronDaniel/rule-manager-backend.git',
     path: '/var/www/tu-app',
