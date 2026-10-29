@@ -10,6 +10,11 @@ export const apps = [{
     PORT: 3000
   },
 
+  env_production: {
+    NODE_ENV: "production",
+    PORT: 3000
+  },
+
   error_file: "/var/www/tu-app/logs/err.log",
   out_file: "/var/www/tu-app/logs/out.log",
   log_date_format: "YYYY-MM-DD HH:mm:ss Z",
