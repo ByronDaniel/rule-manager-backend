@@ -1,0 +1,649 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/application/rma.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/application</a> rma.js</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">92.59% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>175/189</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">79.71% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>110/138</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">89.47% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>17/19</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">92.59% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>175/189</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line high'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a>
+<a name='L130'></a><a href='#L130'>130</a>
+<a name='L131'></a><a href='#L131'>131</a>
+<a name='L132'></a><a href='#L132'>132</a>
+<a name='L133'></a><a href='#L133'>133</a>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a>
+<a name='L136'></a><a href='#L136'>136</a>
+<a name='L137'></a><a href='#L137'>137</a>
+<a name='L138'></a><a href='#L138'>138</a>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a>
+<a name='L141'></a><a href='#L141'>141</a>
+<a name='L142'></a><a href='#L142'>142</a>
+<a name='L143'></a><a href='#L143'>143</a>
+<a name='L144'></a><a href='#L144'>144</a>
+<a name='L145'></a><a href='#L145'>145</a>
+<a name='L146'></a><a href='#L146'>146</a>
+<a name='L147'></a><a href='#L147'>147</a>
+<a name='L148'></a><a href='#L148'>148</a>
+<a name='L149'></a><a href='#L149'>149</a>
+<a name='L150'></a><a href='#L150'>150</a>
+<a name='L151'></a><a href='#L151'>151</a>
+<a name='L152'></a><a href='#L152'>152</a>
+<a name='L153'></a><a href='#L153'>153</a>
+<a name='L154'></a><a href='#L154'>154</a>
+<a name='L155'></a><a href='#L155'>155</a>
+<a name='L156'></a><a href='#L156'>156</a>
+<a name='L157'></a><a href='#L157'>157</a>
+<a name='L158'></a><a href='#L158'>158</a>
+<a name='L159'></a><a href='#L159'>159</a>
+<a name='L160'></a><a href='#L160'>160</a>
+<a name='L161'></a><a href='#L161'>161</a>
+<a name='L162'></a><a href='#L162'>162</a>
+<a name='L163'></a><a href='#L163'>163</a>
+<a name='L164'></a><a href='#L164'>164</a>
+<a name='L165'></a><a href='#L165'>165</a>
+<a name='L166'></a><a href='#L166'>166</a>
+<a name='L167'></a><a href='#L167'>167</a>
+<a name='L168'></a><a href='#L168'>168</a>
+<a name='L169'></a><a href='#L169'>169</a>
+<a name='L170'></a><a href='#L170'>170</a>
+<a name='L171'></a><a href='#L171'>171</a>
+<a name='L172'></a><a href='#L172'>172</a>
+<a name='L173'></a><a href='#L173'>173</a>
+<a name='L174'></a><a href='#L174'>174</a>
+<a name='L175'></a><a href='#L175'>175</a>
+<a name='L176'></a><a href='#L176'>176</a>
+<a name='L177'></a><a href='#L177'>177</a>
+<a name='L178'></a><a href='#L178'>178</a>
+<a name='L179'></a><a href='#L179'>179</a>
+<a name='L180'></a><a href='#L180'>180</a>
+<a name='L181'></a><a href='#L181'>181</a>
+<a name='L182'></a><a href='#L182'>182</a>
+<a name='L183'></a><a href='#L183'>183</a>
+<a name='L184'></a><a href='#L184'>184</a>
+<a name='L185'></a><a href='#L185'>185</a>
+<a name='L186'></a><a href='#L186'>186</a>
+<a name='L187'></a><a href='#L187'>187</a>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">32x</span>
+<span class="cline-any cline-yes">32x</span>
+<span class="cline-any cline-yes">32x</span>
+<span class="cline-any cline-yes">32x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">25x</span>
+<span class="cline-any cline-yes">25x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">19x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">23x</span>
+<span class="cline-any cline-yes">23x</span>
+<span class="cline-any cline-yes">23x</span>
+<span class="cline-any cline-yes">23x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span></td><td class="text"><pre class="prettyprint lang-js">import { randomUUID, createHash } from 'node:crypto';
+import { Problem, assertDecision, etag, fail, page, requireMatch, validateConstraints, validateRequest, validateValue } from '../domain/rules.js';
+&nbsp;
+const now = () =&gt; new Date().toISOString();
+const has = <span class="fstat-no" title="function not covered" >(object, key) =&gt; Object.hasOwn(object, key);</span>
+&nbsp;
+export class RmaService {
+  constructor(store) { this.store = store; }
+  repo(name, session) { return this.store.repo(name, session); }
+&nbsp;
+  async find(name, id, session) {
+    const result = await this.repo(name, session).findOne({ id });
+    if (!result) <span class="branch-0 cbranch-no" title="branch not covered" >fail(404, 'NOT_FOUND', 'No se encontró el recurso solicitado.');</span>
+    return result;
+  }
+&nbsp;
+  async audit(session, context, operation, resourceType, resourceId, parameterId, extra = {}) {
+    await this.repo('audit', session).insert({ id: randomUUID(), occurredAt: now(), actor: { id: context.actor, type: context.actorType ?? 'USER', roles: context.roles }, operation, resourceType, resourceId, ...(parameterId ? { parameterId } <span class="branch-0 cbranch-no" title="branch not covered" >: {})</span>, outcome: 'SUCCESS', correlationId: context.correlationId, ...extra });
+  }
+&nbsp;
+  async idempotent(context, action, callback) {
+    const fingerprint = createHash('sha256').update(JSON.stringify({ action, body: context.body <span class="branch-0 cbranch-no" title="branch not covered" >?? null,</span> match: context.match ?? null })).digest('hex');
+    const key = context.key;
+    try {
+      return await this.store.transaction(async session =&gt; {
+        const repository = this.repo('idempotency', session);
+        const existing = await repository.findOne({ actor: context.actor, key });
+        if (existing) {
+          if (existing.fingerprint !== fingerprint) fail(422, 'IDEMPOTENCY_KEY_REUSED', 'La clave ya fue utilizada para otra solicitud.');
+          return existing.response;
+        }
+        const response = await callback(session);
+        await repository.insert({ actor: context.actor, key, fingerprint, response, expiresAt: new Date(Date.now() + 86400000) });
+        return response;
+      });
+    } catch (error) {
+      if (error.code !== 11000) throw error;
+<span class="cstat-no" title="statement not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >      const existing = await this.repo('idempotency').findOne({ actor: context.actor, key });</span></span>
+<span class="cstat-no" title="statement not covered" >      if (!existing) throw error;</span>
+<span class="cstat-no" title="statement not covered" >      if (existing.fingerprint !== fingerprint) fail(422, 'IDEMPOTENCY_KEY_REUSED', 'La clave ya fue utilizada para otra solicitud.');</span>
+<span class="cstat-no" title="statement not covered" >      return existing.response;</span>
+<span class="cstat-no" title="statement not covered" >    }</span>
+  }
+&nbsp;
+  async createParameter(body, context) {
+    validateConstraints(body.constraints);
+    return this.idempotent(context, 'createParameter', async session =&gt; {
+      if (await this.repo('parameters', session).findOne({ code: body.code })) <span class="branch-0 cbranch-no" title="branch not covered" >fail(409, 'DUPLICATE_CODE', 'El código ya existe.');</span>
+      const parameter = { ...body, id: randomUUID(), status: 'DRAFT', currentVersionNumber: null, createdAt: now(), createdBy: context.actor };
+      await this.repo('parameters', session).insert(parameter);
+      await this.audit(session, context, 'PARAMETER_CREATED', 'PARAMETER', parameter.id, parameter.id);
+      return { status: 201, body: parameter, headers: { ETag: etag(parameter), Location: `/api/v1/parameters/${parameter.id}` } };
+    });
+  }
+&nbsp;
+  async updateParameter(id, body, context) {
+    validateConstraints(body.constraints);
+    return this.store.transaction(async session =&gt; {
+      const parameter = await this.find('parameters', id, session);
+      requireMatch(context.match, parameter);
+      const versions = await this.repo('versions', session).find({ parameterId: id });
+      for (const version of versions) <span class="branch-0 cbranch-no" title="branch not covered" >if (has(version, 'value')) validateValue(parameter.dataType, version.value, body.constraints);</span>
+      const updated = { id, code: parameter.code, dataType: parameter.dataType, ...(parameter.scope <span class="branch-0 cbranch-no" title="branch not covered" >? { scope: parameter.scope } </span>: {}), ...body, status: parameter.status, currentVersionNumber: parameter.currentVersionNumber, createdAt: parameter.createdAt, createdBy: parameter.createdBy, updatedAt: now(), updatedBy: context.actor };
+      await this.repo('parameters', session).collection.replaceOne({ id }, updated, { session });
+      await this.audit(session, context, 'PARAMETER_UPDATED', 'PARAMETER', id, id);
+      return updated;
+    });
+  }
+&nbsp;
+  async retireParameter(id, context) {
+    return this.store.transaction(async session =&gt; {
+      const parameter = await this.find('parameters', id, session);
+      requireMatch(context.match, parameter);
+      if (parameter.status !== 'DRAFT' || await this.repo('versions', session).findOne({ parameterId: id })) fail(409, 'PARAMETER_PUBLISHED', 'Solo se pueden retirar borradores sin publicar.');
+      await this.repo('parameters', session).update({ id }, { $set: { status: 'INACTIVE', updatedAt: now(), updatedBy: context.actor } });
+      await this.audit(session, context, 'PARAMETER_RETIRED', 'PARAMETER', id, id);
+    });
+  }
+&nbsp;
+  async createRequest(body, context) {
+    return this.idempotent(context, 'createRequest', async session =&gt; {
+      await this.synchronize(body.parameterId, session);
+      const parameter = await this.find('parameters', body.parameterId, session);
+      const versions = await this.repo('versions', session).find({ parameterId: parameter.id }, { sort: { versionNumber: -1 } });
+      validateRequest(parameter, body, versions);
+      const request = { ...body, ...(body.effectiveFrom ? { effectiveFrom: new Date(body.effectiveFrom).toISOString() } : {}), ...(body.effectiveTo <span class="branch-0 cbranch-no" title="branch not covered" >? { effectiveTo: new Date(body.effectiveTo).toISOString() } </span>: {}), id: randomUUID(), parameterCode: parameter.code, status: 'PENDING_APPROVAL', createdAt: now(), createdBy: context.actor };
+      await this.repo('requests', session).insert(request);
+      await this.audit(session, context, 'CHANGE_REQUEST_CREATED', 'CHANGE_REQUEST', request.id, parameter.id);
+      return { status: 201, body: request, headers: { ETag: etag(request), Location: `/api/v1/change-requests/${request.id}` } };
+    });
+  }
+&nbsp;
+  async visibleRequest(id, context, session) {
+    const request = await this.find('requests', id, session);
+    if (!context.roles.some(role =&gt; ['CHECKER', 'ADMIN', 'AUDITOR'].includes(role)) &amp;&amp; request.createdBy !== context.actor) <span class="branch-0 cbranch-no" title="branch not covered" >fail(404, 'NOT_FOUND', 'No se encontró la propuesta.');</span>
+    return request;
+  }
+&nbsp;
+<span class="fstat-no" title="function not covered" >  async cancelRequest(id, context) {</span>
+<span class="cstat-no" title="statement not covered" >    return this.store.transaction(async session =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      const request = await this.find('requests', id, session);</span>
+<span class="cstat-no" title="statement not covered" >      if (request.createdBy !== context.actor) fail(403, 'FORBIDDEN', 'Solo el creador puede cancelar la propuesta.');</span>
+<span class="cstat-no" title="statement not covered" >      requireMatch(context.match, request);</span>
+<span class="cstat-no" title="statement not covered" >      if (request.status !== 'PENDING_APPROVAL') fail(409, 'INVALID_STATE_TRANSITION', 'La propuesta ya fue resuelta.');</span>
+<span class="cstat-no" title="statement not covered" >      await this.repo('requests', session).update({ id }, { $set: { status: 'CANCELLED' } });</span>
+<span class="cstat-no" title="statement not covered" >      await this.audit(session, context, 'CHANGE_REQUEST_CANCELLED', 'CHANGE_REQUEST', id, request.parameterId);</span>
+<span class="cstat-no" title="statement not covered" >    });</span>
+<span class="cstat-no" title="statement not covered" >  }</span>
+&nbsp;
+  async decide(id, approved, body, context) {
+    return this.idempotent(context, `${approved ? 'approve' : 'reject'}:${id}`, async session =&gt; {
+      const request = await this.find('requests', id, session);
+      assertDecision(request, context.actor, context.match);
+      const decidedAt = now();
+      const decision = { changeRequestId: id, decision: approved ? 'APPROVED' : 'REJECTED', decidedBy: context.actor, decidedAt };
+      if (approved) {
+        await this.synchronize(request.parameterId, session);
+        const parameter = await this.find('parameters', request.parameterId, session);
+        const versions = await this.repo('versions', session).find({ parameterId: parameter.id }, { sort: { versionNumber: -1 } });
+        const current = this.effectiveVersion(versions, decidedAt);
+        const baseVersion = current?.versionNumber ?? versions[0]<span class="branch-0 cbranch-no" title="branch not covered" >?.versionNumber </span>?? null;
+        if ((request.baseVersionNumber ?? null) !== baseVersion) fail(409, 'BASE_VERSION_MISMATCH', 'La versión base cambió.');
+        validateRequest(parameter, request, versions, new Date(decidedAt));
+        const start = request.effectiveFrom &amp;&amp; request.effectiveFrom &gt; decidedAt ? request.effectiveFrom : decidedAt;
+        if (versions.some(version =&gt; version.effectiveFrom &gt; decidedAt <span class="branch-0 cbranch-no" title="branch not covered" >&amp;&amp; (!request.effectiveTo || version.effectiveFrom &lt; request.effectiveTo) <span class="branch-0 cbranch-no" title="branch not covered" ></span>&amp;&amp; (!version.effectiveTo || version.effectiveTo &gt; start))</span>) <span class="branch-0 cbranch-no" title="branch not covered" >fail(409, 'EFFECTIVE_PERIOD_CONFLICT', 'Existe una programación incompatible.');</span>
+        const value = request.changeType === 'SET_VALUE' ? request.proposedValue <span class="branch-0 cbranch-no" title="branch not covered" >: request.changeType === 'REACTIVATE' ? versions.find(version =&gt; version.changeType === 'SET_VALUE')?.value : undefined;</span>
+        const version = { parameterId: parameter.id, versionNumber: (versions[0]?.versionNumber ?? 0) + 1, status: start &gt; decidedAt ? 'SCHEDULED' : 'ACTIVE', changeType: request.changeType, ...(value === undefined <span class="branch-0 cbranch-no" title="branch not covered" >? {} </span>: { value }), effectiveFrom: start, effectiveTo: request.effectiveTo ?? null, changeRequestId: id, reason: request.reason, createdBy: request.createdBy, approvedBy: context.actor, approvedAt: decidedAt };
+        await this.repo('versions', session).insert(version);
+        await this.repo('parameters', session).update({ id: parameter.id }, { $set: { updatedAt: decidedAt, updatedBy: context.actor, ...(start &lt;= decidedAt ? { currentVersionNumber: version.versionNumber, status: request.changeType === 'DEACTIVATE' <span class="branch-0 cbranch-no" title="branch not covered" >? 'INACTIVE' </span>: 'ACTIVE' } : {}) } });
+        Object.assign(decision, { resultingVersionNumber: version.versionNumber, publicationStatus: version.status }, body.comment <span class="branch-0 cbranch-no" title="branch not covered" >? { comment: body.comment } </span>: {});
+        await this.audit(session, context, 'VERSION_PUBLISHED', 'PARAMETER_VERSION', id, parameter.id, { versionNumber: version.versionNumber });
+      } else decision.rejectionReason = body.reason;
+      await this.repo('requests', session).update({ id }, { $set: { status: decision.decision, decidedAt, decidedBy: context.actor, ...(decision.resultingVersionNumber ? { resultingVersionNumber: decision.resultingVersionNumber } : {}) } });
+      await this.repo('decisions', session).insert(decision);
+      await this.audit(session, context, approved ? 'CHANGE_REQUEST_APPROVED' : 'CHANGE_REQUEST_REJECTED', 'CHANGE_REQUEST', id, request.parameterId);
+      return { status: 201, body: decision, headers: { Location: `/api/v1/change-requests/${id}/${approved ? 'approval' : 'rejection'}` } };
+    });
+  }
+&nbsp;
+  effectiveVersion(versions, instant = now()) {
+    const eligible = versions.filter(version =&gt; version.effectiveFrom &lt;= instant).sort((left, right) =&gt; right.effectiveFrom.localeCompare(left.effectiveFrom) <span class="branch-0 cbranch-no" title="branch not covered" >|| right.versionNumber - left.versionNumber)</span>;
+    const latest = eligible[0];
+    return latest &amp;&amp; (!latest.effectiveTo <span class="branch-0 cbranch-no" title="branch not covered" >|| latest.effectiveTo &gt; instant)</span> ? latest : null;
+  }
+&nbsp;
+  async synchronize(id, session) {
+    const repository = this.repo('parameters', session);
+    const parameter = await repository.findOne({ id });
+    if (!parameter) <span class="branch-0 cbranch-no" title="branch not covered" >return;</span>
+    const versions = await this.repo('versions', session).find({ parameterId: id });
+    if (!versions.length) return;
+    const instant = now();
+    const current = this.effectiveVersion(versions, instant);
+    const system = { actor: 'system', actorType: 'SYSTEM', roles: [], correlationId: randomUUID() };
+    for (const version of versions) {
+      const expected = version.effectiveFrom &gt; instant ? 'SCHEDULED' : current?.versionNumber === version.versionNumber ? 'ACTIVE' : 'EXPIRED';
+      if (expected !== version.status) {
+        await this.repo('versions', session).update({ parameterId: id, versionNumber: version.versionNumber }, { $set: { status: expected } });
+        if (expected !== 'SCHEDULED') await this.audit(session, system, expected === 'ACTIVE' ? 'VERSION_ACTIVATED' : 'VERSION_EXPIRED', 'PARAMETER_VERSION', version.changeRequestId, id, { versionNumber: version.versionNumber });
+      }
+    }
+    const nextStatus = current &amp;&amp; current.changeType !== 'DEACTIVATE' ? 'ACTIVE' : !current &amp;&amp; versions.every(version =&gt; version.effectiveFrom &gt; instant) ? 'DRAFT' <span class="branch-0 cbranch-no" title="branch not covered" >: 'INACTIVE';</span>
+    const nextVersion = current?.versionNumber ?? null;
+    if (parameter.status !== nextStatus || parameter.currentVersionNumber !== nextVersion) await repository.update({ id }, { $set: { status: nextStatus, currentVersionNumber: nextVersion, updatedAt: instant, updatedBy: 'system' } });
+  }
+&nbsp;
+  async synchronizeAll() {
+    const parameters = await this.repo('parameters').find();
+    for (const parameter of parameters) await this.store.transaction(session =&gt; this.synchronize(parameter.id, session));
+  }
+&nbsp;
+  async currentValue(parameter) {
+    const versions = await this.repo('versions').find({ parameterId: parameter.id });
+    if (!versions.length &amp;&amp; parameter.status === 'INACTIVE') fail(404, 'PARAMETER_INACTIVE', 'El parámetro está inactivo.');
+    const version = this.effectiveVersion(versions);
+    if (!version) <span class="branch-0 cbranch-no" title="branch not covered" >fail(404, 'PARAMETER_NOT_EFFECTIVE', 'El parámetro no tiene una versión vigente.');</span>
+    if (version.changeType === 'DEACTIVATE') <span class="branch-0 cbranch-no" title="branch not covered" >fail(404, 'PARAMETER_INACTIVE', 'El parámetro está inactivo.');</span>
+    return { code: parameter.code, dataType: parameter.dataType, value: version.value, ...(parameter.unit <span class="branch-0 cbranch-no" title="branch not covered" >? { unit: parameter.unit } </span>: {}), ...(parameter.scope <span class="branch-0 cbranch-no" title="branch not covered" >? { scope: parameter.scope } </span>: {}), versionNumber: version.versionNumber, effectiveFrom: version.effectiveFrom, effectiveTo: version.effectiveTo };
+  }
+&nbsp;
+  async list(name, filter, query, defaultSort) {
+    const pageNumber = Number(query.page <span class="branch-0 cbranch-no" title="branch not covered" >?? 0)</span>;
+    const size = Number(query.size <span class="branch-0 cbranch-no" title="branch not covered" >?? 20)</span>;
+    const [field, direction] = (query.sort <span class="branch-0 cbranch-no" title="branch not covered" >?? defaultSort)</span>.split(',');
+    const repository = this.repo(name);
+    const [items, total] = await Promise.all([repository.find(filter, { sort: { [field]: direction === 'desc' ? -1 : 1 }, skip: pageNumber * size, limit: size }), repository.count(filter)]);
+    return page(items, pageNumber, size, total);
+  }
+}</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-10-29T00:37:04.370Z
+            </div>
+        <script src="../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../sorter.js"></script>
+        <script src="../../block-navigation.js"></script>
+    </body>
+</html>
+    

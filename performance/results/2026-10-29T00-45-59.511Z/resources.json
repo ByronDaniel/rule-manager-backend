@@ -1,0 +1,54 @@
+{
+  "startedAt": "2026-10-29T00:45:59.512Z",
+  "environment": {
+    "pid": 83029,
+    "hostname": "MacBook-M4-Pro-de-Byron.local",
+    "platform": "darwin",
+    "release": "27.2.0",
+    "cpuCount": 14,
+    "cpuModel": "Apple M4 Pro",
+    "totalMemoryBytes": 25769803776,
+    "node": "v24.15.0",
+    "baseUrl": "http://127.0.0.1:3010"
+  },
+  "samples": [
+    {
+      "at": "2026-10-29T00:45:59.512Z",
+      "phase": "setup",
+      "hostFreeMemoryBytes": 107446272,
+      "cpuPercent": 0.7,
+      "rssBytes": 75546624
+    },
+    {
+      "at": "2026-10-29T00:45:59.515Z",
+      "phase": "smoke",
+      "hostFreeMemoryBytes": 119898112,
+      "cpuPercent": 0.7,
+      "rssBytes": 75546624
+    },
+    {
+      "at": "2026-10-29T00:46:03.731Z",
+      "phase": "smoke",
+      "hostFreeMemoryBytes": 169181184,
+      "cpuPercent": 0.1,
+      "rssBytes": 76038144
+    },
+    {
+      "at": "2026-10-29T00:46:03.738Z",
+      "phase": "finished",
+      "hostFreeMemoryBytes": 167624704,
+      "cpuPercent": 0.1,
+      "rssBytes": 76038144
+    }
+  ],
+  "scenarios": [
+    {
+      "test": "smoke",
+      "startedAt": "2026-10-29T00:45:59.517Z",
+      "endedAt": "2026-10-29T00:46:03.731Z",
+      "code": 0,
+      "signal": null
+    }
+  ],
+  "endedAt": "2026-10-29T00:46:03.742Z"
+}

@@ -1,0 +1,9 @@
+{
+  "firstStatus": 200,
+  "etagPresent": true,
+  "conditionalStatus": 304,
+  "loginStatuses": {
+    "401": 20,
+    "429": 1
+  }
+}

@@ -1,0 +1,971 @@
+{
+  "startedAt": "2026-10-29T00:46:25.670Z",
+  "environment": {
+    "pid": 83029,
+    "hostname": "MacBook-M4-Pro-de-Byron.local",
+    "platform": "darwin",
+    "release": "27.2.0",
+    "cpuCount": 14,
+    "cpuModel": "Apple M4 Pro",
+    "totalMemoryBytes": 25769803776,
+    "node": "v24.15.0",
+    "baseUrl": "http://127.0.0.1:3010"
+  },
+  "samples": [
+    {
+      "at": "2026-10-29T00:46:25.671Z",
+      "phase": "setup",
+      "hostFreeMemoryBytes": 91947008,
+      "cpuPercent": 0,
+      "rssBytes": 76431360
+    },
+    {
+      "at": "2026-10-29T00:46:25.673Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 93913088,
+      "cpuPercent": 0,
+      "rssBytes": 76431360
+    },
+    {
+      "at": "2026-10-29T00:46:30.674Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 152059904,
+      "cpuPercent": 3.5,
+      "rssBytes": 82837504
+    },
+    {
+      "at": "2026-10-29T00:46:35.675Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 134905856,
+      "cpuPercent": 1.6,
+      "rssBytes": 84918272
+    },
+    {
+      "at": "2026-10-29T00:46:40.676Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 200654848,
+      "cpuPercent": 2.2,
+      "rssBytes": 87998464
+    },
+    {
+      "at": "2026-10-29T00:46:45.677Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 172392448,
+      "cpuPercent": 1.7,
+      "rssBytes": 99057664
+    },
+    {
+      "at": "2026-10-29T00:46:50.677Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 87261184,
+      "cpuPercent": 4.3,
+      "rssBytes": 91258880
+    },
+    {
+      "at": "2026-10-29T00:46:55.679Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 147161088,
+      "cpuPercent": 2.4,
+      "rssBytes": 98992128
+    },
+    {
+      "at": "2026-10-29T00:47:00.679Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 62849024,
+      "cpuPercent": 3.5,
+      "rssBytes": 109592576
+    },
+    {
+      "at": "2026-10-29T00:47:05.681Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 136249344,
+      "cpuPercent": 4.8,
+      "rssBytes": 118079488
+    },
+    {
+      "at": "2026-10-29T00:47:10.685Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 180420608,
+      "cpuPercent": 3.5,
+      "rssBytes": 124452864
+    },
+    {
+      "at": "2026-10-29T00:47:15.685Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 143818752,
+      "cpuPercent": 2.3,
+      "rssBytes": 125960192
+    },
+    {
+      "at": "2026-10-29T00:47:20.686Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 121274368,
+      "cpuPercent": 4.9,
+      "rssBytes": 128352256
+    },
+    {
+      "at": "2026-10-29T00:47:25.687Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 133431296,
+      "cpuPercent": 2.2,
+      "rssBytes": 144556032
+    },
+    {
+      "at": "2026-10-29T00:47:30.688Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 119324672,
+      "cpuPercent": 8.1,
+      "rssBytes": 161103872
+    },
+    {
+      "at": "2026-10-29T00:47:35.689Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 73269248,
+      "cpuPercent": 5.3,
+      "rssBytes": 163168256
+    },
+    {
+      "at": "2026-10-29T00:47:40.690Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 87162880,
+      "cpuPercent": 6.3,
+      "rssBytes": 164052992
+    },
+    {
+      "at": "2026-10-29T00:47:45.692Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 104660992,
+      "cpuPercent": 3.4,
+      "rssBytes": 164528128
+    },
+    {
+      "at": "2026-10-29T00:47:50.693Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 83902464,
+      "cpuPercent": 5,
+      "rssBytes": 162938880
+    },
+    {
+      "at": "2026-10-29T00:47:55.694Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 114950144,
+      "cpuPercent": 9.7,
+      "rssBytes": 193249280
+    },
+    {
+      "at": "2026-10-29T00:48:00.695Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 181485568,
+      "cpuPercent": 7.3,
+      "rssBytes": 219414528
+    },
+    {
+      "at": "2026-10-29T00:48:05.696Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 65126400,
+      "cpuPercent": 6.5,
+      "rssBytes": 226541568
+    },
+    {
+      "at": "2026-10-29T00:48:10.697Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 77217792,
+      "cpuPercent": 7.4,
+      "rssBytes": 227049472
+    },
+    {
+      "at": "2026-10-29T00:48:15.698Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 143245312,
+      "cpuPercent": 4.9,
+      "rssBytes": 225280000
+    },
+    {
+      "at": "2026-10-29T00:48:20.699Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 124469248,
+      "cpuPercent": 5.2,
+      "rssBytes": 226279424
+    },
+    {
+      "at": "2026-10-29T00:48:25.699Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 117227520,
+      "cpuPercent": 3.4,
+      "rssBytes": 226312192
+    },
+    {
+      "at": "2026-10-29T00:48:30.699Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 130433024,
+      "cpuPercent": 4.9,
+      "rssBytes": 227590144
+    },
+    {
+      "at": "2026-10-29T00:48:35.700Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 120242176,
+      "cpuPercent": 5,
+      "rssBytes": 229064704
+    },
+    {
+      "at": "2026-10-29T00:48:40.701Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 70746112,
+      "cpuPercent": 6.3,
+      "rssBytes": 228114432
+    },
+    {
+      "at": "2026-10-29T00:48:45.702Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 176816128,
+      "cpuPercent": 8.7,
+      "rssBytes": 230473728
+    },
+    {
+      "at": "2026-10-29T00:48:50.703Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 142295040,
+      "cpuPercent": 3.1,
+      "rssBytes": 230506496
+    },
+    {
+      "at": "2026-10-29T00:48:55.704Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 84115456,
+      "cpuPercent": 4.7,
+      "rssBytes": 231292928
+    },
+    {
+      "at": "2026-10-29T00:49:00.705Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 92536832,
+      "cpuPercent": 4.1,
+      "rssBytes": 233160704
+    },
+    {
+      "at": "2026-10-29T00:49:05.706Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 78053376,
+      "cpuPercent": 4.1,
+      "rssBytes": 233144320
+    },
+    {
+      "at": "2026-10-29T00:49:10.707Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 139362304,
+      "cpuPercent": 1.9,
+      "rssBytes": 233373696
+    },
+    {
+      "at": "2026-10-29T00:49:15.707Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 96387072,
+      "cpuPercent": 1.8,
+      "rssBytes": 233390080
+    },
+    {
+      "at": "2026-10-29T00:49:20.708Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 62849024,
+      "cpuPercent": 3.7,
+      "rssBytes": 233390080
+    },
+    {
+      "at": "2026-10-29T00:49:25.710Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 194265088,
+      "cpuPercent": 4.1,
+      "rssBytes": 233619456
+    },
+    {
+      "at": "2026-10-29T00:49:30.710Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 120389632,
+      "cpuPercent": 4.9,
+      "rssBytes": 233046016
+    },
+    {
+      "at": "2026-10-29T00:49:35.711Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 120455168,
+      "cpuPercent": 8.2,
+      "rssBytes": 236077056
+    },
+    {
+      "at": "2026-10-29T00:49:40.712Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 128303104,
+      "cpuPercent": 4.8,
+      "rssBytes": 236077056
+    },
+    {
+      "at": "2026-10-29T00:49:45.714Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 69140480,
+      "cpuPercent": 7.1,
+      "rssBytes": 235798528
+    },
+    {
+      "at": "2026-10-29T00:49:50.714Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 111214592,
+      "cpuPercent": 4.2,
+      "rssBytes": 235700224
+    },
+    {
+      "at": "2026-10-29T00:49:55.715Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 94420992,
+      "cpuPercent": 10.3,
+      "rssBytes": 233259008
+    },
+    {
+      "at": "2026-10-29T00:50:00.716Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 92209152,
+      "cpuPercent": 4.5,
+      "rssBytes": 233717760
+    },
+    {
+      "at": "2026-10-29T00:50:05.717Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 168067072,
+      "cpuPercent": 4.5,
+      "rssBytes": 235634688
+    },
+    {
+      "at": "2026-10-29T00:50:10.718Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 136232960,
+      "cpuPercent": 6.5,
+      "rssBytes": 236847104
+    },
+    {
+      "at": "2026-10-29T00:50:15.719Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 200933376,
+      "cpuPercent": 5.9,
+      "rssBytes": 236290048
+    },
+    {
+      "at": "2026-10-29T00:50:20.719Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 117719040,
+      "cpuPercent": 5,
+      "rssBytes": 233734144
+    },
+    {
+      "at": "2026-10-29T00:50:25.721Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 348192768,
+      "cpuPercent": 5,
+      "rssBytes": 233816064
+    },
+    {
+      "at": "2026-10-29T00:50:30.722Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 337739776,
+      "cpuPercent": 4.4,
+      "rssBytes": 233881600
+    },
+    {
+      "at": "2026-10-29T00:50:35.723Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 190627840,
+      "cpuPercent": 3.1,
+      "rssBytes": 233897984
+    },
+    {
+      "at": "2026-10-29T00:50:40.724Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 104431616,
+      "cpuPercent": 6.3,
+      "rssBytes": 233947136
+    },
+    {
+      "at": "2026-10-29T00:50:45.725Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 74727424,
+      "cpuPercent": 4.6,
+      "rssBytes": 234110976
+    },
+    {
+      "at": "2026-10-29T00:50:50.725Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 74907648,
+      "cpuPercent": 7.1,
+      "rssBytes": 235028480
+    },
+    {
+      "at": "2026-10-29T00:50:55.726Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 135430144,
+      "cpuPercent": 2.4,
+      "rssBytes": 235094016
+    },
+    {
+      "at": "2026-10-29T00:51:00.727Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 216432640,
+      "cpuPercent": 4,
+      "rssBytes": 235094016
+    },
+    {
+      "at": "2026-10-29T00:51:05.728Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 141197312,
+      "cpuPercent": 5.2,
+      "rssBytes": 234864640
+    },
+    {
+      "at": "2026-10-29T00:51:10.729Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 114147328,
+      "cpuPercent": 7.2,
+      "rssBytes": 234291200
+    },
+    {
+      "at": "2026-10-29T00:51:15.731Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 72302592,
+      "cpuPercent": 5.7,
+      "rssBytes": 234176512
+    },
+    {
+      "at": "2026-10-29T00:51:20.732Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 124125184,
+      "cpuPercent": 3.5,
+      "rssBytes": 228425728
+    },
+    {
+      "at": "2026-10-29T00:51:25.732Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 228900864,
+      "cpuPercent": 3.8,
+      "rssBytes": 205242368
+    },
+    {
+      "at": "2026-10-29T00:51:30.734Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 108249088,
+      "cpuPercent": 5.7,
+      "rssBytes": 213598208
+    },
+    {
+      "at": "2026-10-29T00:51:35.735Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 85999616,
+      "cpuPercent": 4.1,
+      "rssBytes": 217268224
+    },
+    {
+      "at": "2026-10-29T00:51:40.736Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 136396800,
+      "cpuPercent": 2.8,
+      "rssBytes": 212992000
+    },
+    {
+      "at": "2026-10-29T00:51:45.738Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 129040384,
+      "cpuPercent": 16,
+      "rssBytes": 220872704
+    },
+    {
+      "at": "2026-10-29T00:51:50.738Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 105316352,
+      "cpuPercent": 4.8,
+      "rssBytes": 215728128
+    },
+    {
+      "at": "2026-10-29T00:51:55.739Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 114311168,
+      "cpuPercent": 2.4,
+      "rssBytes": 212041728
+    },
+    {
+      "at": "2026-10-29T00:52:00.740Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 89571328,
+      "cpuPercent": 3.1,
+      "rssBytes": 224100352
+    },
+    {
+      "at": "2026-10-29T00:52:05.741Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 74039296,
+      "cpuPercent": 6.9,
+      "rssBytes": 214827008
+    },
+    {
+      "at": "2026-10-29T00:52:10.743Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 97173504,
+      "cpuPercent": 5.7,
+      "rssBytes": 210927616
+    },
+    {
+      "at": "2026-10-29T00:52:15.744Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 106676224,
+      "cpuPercent": 6.3,
+      "rssBytes": 223641600
+    },
+    {
+      "at": "2026-10-29T00:52:20.746Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 78561280,
+      "cpuPercent": 3.2,
+      "rssBytes": 224362496
+    },
+    {
+      "at": "2026-10-29T00:52:25.747Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 171802624,
+      "cpuPercent": 9.3,
+      "rssBytes": 227475456
+    },
+    {
+      "at": "2026-10-29T00:52:30.748Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 179175424,
+      "cpuPercent": 7.6,
+      "rssBytes": 227573760
+    },
+    {
+      "at": "2026-10-29T00:52:35.750Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 152469504,
+      "cpuPercent": 5,
+      "rssBytes": 229523456
+    },
+    {
+      "at": "2026-10-29T00:52:40.751Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 76513280,
+      "cpuPercent": 3.5,
+      "rssBytes": 229720064
+    },
+    {
+      "at": "2026-10-29T00:52:45.752Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 75661312,
+      "cpuPercent": 2.2,
+      "rssBytes": 229261312
+    },
+    {
+      "at": "2026-10-29T00:52:50.753Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 86491136,
+      "cpuPercent": 3.5,
+      "rssBytes": 229244928
+    },
+    {
+      "at": "2026-10-29T00:52:55.754Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 84082688,
+      "cpuPercent": 5.1,
+      "rssBytes": 226983936
+    },
+    {
+      "at": "2026-10-29T00:53:00.755Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 99450880,
+      "cpuPercent": 6.5,
+      "rssBytes": 226885632
+    },
+    {
+      "at": "2026-10-29T00:53:05.756Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 129515520,
+      "cpuPercent": 9.3,
+      "rssBytes": 226852864
+    },
+    {
+      "at": "2026-10-29T00:53:10.757Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 174735360,
+      "cpuPercent": 4.8,
+      "rssBytes": 226918400
+    },
+    {
+      "at": "2026-10-29T00:53:15.757Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 229277696,
+      "cpuPercent": 4.5,
+      "rssBytes": 226918400
+    },
+    {
+      "at": "2026-10-29T00:53:20.759Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 181944320,
+      "cpuPercent": 6.6,
+      "rssBytes": 227131392
+    },
+    {
+      "at": "2026-10-29T00:53:25.760Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 123830272,
+      "cpuPercent": 6.4,
+      "rssBytes": 217382912
+    },
+    {
+      "at": "2026-10-29T00:53:30.760Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 169984000,
+      "cpuPercent": 4.7,
+      "rssBytes": 221855744
+    },
+    {
+      "at": "2026-10-29T00:53:35.762Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 125108224,
+      "cpuPercent": 4,
+      "rssBytes": 222412800
+    },
+    {
+      "at": "2026-10-29T00:53:40.763Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 150814720,
+      "cpuPercent": 2.4,
+      "rssBytes": 225116160
+    },
+    {
+      "at": "2026-10-29T00:53:45.764Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 90177536,
+      "cpuPercent": 2.2,
+      "rssBytes": 225116160
+    },
+    {
+      "at": "2026-10-29T00:53:50.765Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 101351424,
+      "cpuPercent": 4.2,
+      "rssBytes": 223330304
+    },
+    {
+      "at": "2026-10-29T00:53:55.766Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 200163328,
+      "cpuPercent": 3.7,
+      "rssBytes": 191184896
+    },
+    {
+      "at": "2026-10-29T00:54:00.767Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 148815872,
+      "cpuPercent": 3.2,
+      "rssBytes": 206929920
+    },
+    {
+      "at": "2026-10-29T00:54:05.768Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 107069440,
+      "cpuPercent": 2.5,
+      "rssBytes": 205275136
+    },
+    {
+      "at": "2026-10-29T00:54:10.769Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 67469312,
+      "cpuPercent": 1.3,
+      "rssBytes": 211959808
+    },
+    {
+      "at": "2026-10-29T00:54:15.773Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 97943552,
+      "cpuPercent": 1.9,
+      "rssBytes": 211927040
+    },
+    {
+      "at": "2026-10-29T00:54:20.773Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 73957376,
+      "cpuPercent": 1.3,
+      "rssBytes": 185860096
+    },
+    {
+      "at": "2026-10-29T00:54:25.774Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 100384768,
+      "cpuPercent": 0.3,
+      "rssBytes": 171343872
+    },
+    {
+      "at": "2026-10-29T00:54:26.434Z",
+      "phase": "load",
+      "hostFreeMemoryBytes": 195805184,
+      "cpuPercent": 0.1,
+      "rssBytes": 170590208
+    },
+    {
+      "at": "2026-10-29T00:54:26.441Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 195805184,
+      "cpuPercent": 0.1,
+      "rssBytes": 170590208
+    },
+    {
+      "at": "2026-10-29T00:54:30.774Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 101187584,
+      "cpuPercent": 4.2,
+      "rssBytes": 188334080
+    },
+    {
+      "at": "2026-10-29T00:54:35.776Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 98893824,
+      "cpuPercent": 1.5,
+      "rssBytes": 204947456
+    },
+    {
+      "at": "2026-10-29T00:54:40.777Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 79446016,
+      "cpuPercent": 4.9,
+      "rssBytes": 208519168
+    },
+    {
+      "at": "2026-10-29T00:54:45.777Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 77119488,
+      "cpuPercent": 1.9,
+      "rssBytes": 203505664
+    },
+    {
+      "at": "2026-10-29T00:54:50.778Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 78020608,
+      "cpuPercent": 2.3,
+      "rssBytes": 207470592
+    },
+    {
+      "at": "2026-10-29T00:54:55.779Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 96796672,
+      "cpuPercent": 1.3,
+      "rssBytes": 206110720
+    },
+    {
+      "at": "2026-10-29T00:55:00.779Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 79511552,
+      "cpuPercent": 1.6,
+      "rssBytes": 229195776
+    },
+    {
+      "at": "2026-10-29T00:55:05.781Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 99123200,
+      "cpuPercent": 2,
+      "rssBytes": 222887936
+    },
+    {
+      "at": "2026-10-29T00:55:10.782Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 115638272,
+      "cpuPercent": 7.8,
+      "rssBytes": 241844224
+    },
+    {
+      "at": "2026-10-29T00:55:15.783Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 54018048,
+      "cpuPercent": 3.2,
+      "rssBytes": 243679232
+    },
+    {
+      "at": "2026-10-29T00:55:20.784Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 69206016,
+      "cpuPercent": 4.8,
+      "rssBytes": 247414784
+    },
+    {
+      "at": "2026-10-29T00:55:25.785Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 74448896,
+      "cpuPercent": 2.1,
+      "rssBytes": 253870080
+    },
+    {
+      "at": "2026-10-29T00:55:30.786Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 103677952,
+      "cpuPercent": 3.1,
+      "rssBytes": 253624320
+    },
+    {
+      "at": "2026-10-29T00:55:35.788Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 72744960,
+      "cpuPercent": 3.2,
+      "rssBytes": 255016960
+    },
+    {
+      "at": "2026-10-29T00:55:40.789Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 94666752,
+      "cpuPercent": 2.4,
+      "rssBytes": 255868928
+    },
+    {
+      "at": "2026-10-29T00:55:45.789Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 111919104,
+      "cpuPercent": 3.5,
+      "rssBytes": 253394944
+    },
+    {
+      "at": "2026-10-29T00:55:50.790Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 117997568,
+      "cpuPercent": 3.3,
+      "rssBytes": 255410176
+    },
+    {
+      "at": "2026-10-29T00:55:55.791Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 77807616,
+      "cpuPercent": 5.3,
+      "rssBytes": 244269056
+    },
+    {
+      "at": "2026-10-29T00:56:00.792Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 171573248,
+      "cpuPercent": 0.4,
+      "rssBytes": 249249792
+    },
+    {
+      "at": "2026-10-29T00:56:05.792Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 108937216,
+      "cpuPercent": 0.2,
+      "rssBytes": 248807424
+    },
+    {
+      "at": "2026-10-29T00:56:10.793Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 108298240,
+      "cpuPercent": 0.2,
+      "rssBytes": 241795072
+    },
+    {
+      "at": "2026-10-29T00:56:15.796Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 84951040,
+      "cpuPercent": 0.3,
+      "rssBytes": 239288320
+    },
+    {
+      "at": "2026-10-29T00:56:20.797Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 68845568,
+      "cpuPercent": 0.3,
+      "rssBytes": 229507072
+    },
+    {
+      "at": "2026-10-29T00:56:25.798Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 150831104,
+      "cpuPercent": 0.4,
+      "rssBytes": 201113600
+    },
+    {
+      "at": "2026-10-29T00:56:30.799Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 97140736,
+      "cpuPercent": 0.3,
+      "rssBytes": 194822144
+    },
+    {
+      "at": "2026-10-29T00:56:35.800Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 72335360,
+      "cpuPercent": 0.2,
+      "rssBytes": 194887680
+    },
+    {
+      "at": "2026-10-29T00:56:40.800Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 110051328,
+      "cpuPercent": 0.6,
+      "rssBytes": 184270848
+    },
+    {
+      "at": "2026-10-29T00:56:45.801Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 144424960,
+      "cpuPercent": 0.4,
+      "rssBytes": 184238080
+    },
+    {
+      "at": "2026-10-29T00:56:50.804Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 65601536,
+      "cpuPercent": 0.3,
+      "rssBytes": 184352768
+    },
+    {
+      "at": "2026-10-29T00:56:55.804Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 103153664,
+      "cpuPercent": 0.2,
+      "rssBytes": 184565760
+    },
+    {
+      "at": "2026-10-29T00:57:00.806Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 66879488,
+      "cpuPercent": 0.6,
+      "rssBytes": 184729600
+    },
+    {
+      "at": "2026-10-29T00:57:05.808Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 74792960,
+      "cpuPercent": 0.3,
+      "rssBytes": 171032576
+    },
+    {
+      "at": "2026-10-29T00:57:07.903Z",
+      "phase": "spike",
+      "hostFreeMemoryBytes": 286113792,
+      "cpuPercent": 0,
+      "rssBytes": 172097536
+    },
+    {
+      "at": "2026-10-29T00:57:07.905Z",
+      "phase": "finished",
+      "hostFreeMemoryBytes": 274284544,
+      "cpuPercent": 0,
+      "rssBytes": 172097536
+    }
+  ],
+  "scenarios": [
+    {
+      "test": "load",
+      "startedAt": "2026-10-29T00:46:25.674Z",
+      "endedAt": "2026-10-29T00:54:26.434Z",
+      "code": 0,
+      "signal": null
+    },
+    {
+      "test": "spike",
+      "startedAt": "2026-10-29T00:54:26.444Z",
+      "endedAt": "2026-10-29T00:57:07.903Z",
+      "code": 99,
+      "signal": null
+    }
+  ],
+  "endedAt": "2026-10-29T00:57:07.908Z"
+}
