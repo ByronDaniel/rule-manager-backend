@@ -9,7 +9,7 @@ export function loadConfig(environment = process.env) {
     jwtIssuer: environment.JWT_ISSUER || 'rma-service',
     jwtAudience: environment.JWT_AUDIENCE || 'rma-clients',
     jwtExpiresIn: Number(environment.JWT_EXPIRES_IN || 3600),
-    corsOrigin: environment.CORS_ORIGIN || 'http://localhost:4200',
+    corsOrigin: environment.CORS_ORIGIN || 'https://rulemanagers-azefgddmbtbrf6bp.brazilsouth-01.azurewebsites.net',
     port: Number(environment.PORT || 3000)
   };
 }
